@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TheTwelthFanAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6613478951e84a02c3ec66832df85f5ed2cb2b60")]
 [assembly: System.Reflection.AssemblyProductAttribute("TheTwelthFanAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TheTwelthFanAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

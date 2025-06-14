@@ -171,3 +171,4 @@ C:\Users\carso\Documents\C#\TheTwelthFanAPI\bin\Debug\net8.0\zh-Hant\Microsoft.C
 c:\Users\carso\Documents\C#\TheTwelthFanAPI\bin\Debug\net8.0\BCrypt.Net-Next.dll
 c:\Users\carso\Documents\C#\TheTwelthFanAPI\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 c:\Users\carso\Documents\C#\TheTwelthFanAPI\bin\Debug\net8.0\Microsoft.Bcl.Memory.dll
+C:\Users\carso\Documents\C#\TheTwelthFanAPI\obj\Debug\net8.0\TheTwelthFanAPI.sourcelink.json

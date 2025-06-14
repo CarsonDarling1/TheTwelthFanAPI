@@ -14,6 +14,10 @@ namespace TheTwelthFan.Data
         public DbSet<Player> Players { get; set; } = null!; // Add Players DbSet
         public DbSet<FantasyTeam> FantasyTeams {get; set;} = null;
         public DbSet<FantasyLeague> FantasyLeagues {get; set;} = null;
+        public DbSet<Draft> Drafts { get; set; }
+        public DbSet<DraftOrderEntry> DraftOrderEntries { get; set; }
+        public DbSet<DraftPickRequest> DraftPickRequestEntries { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

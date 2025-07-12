@@ -12,11 +12,11 @@ namespace TheTwelthFan.Data
 
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Player> Players { get; set; } = null!; // Add Players DbSet
-        public DbSet<FantasyTeam> FantasyTeams {get; set;} = null;
-        public DbSet<FantasyLeague> FantasyLeagues {get; set;} = null;
-        public DbSet<Draft> Drafts { get; set; }
-        public DbSet<DraftOrderEntry> DraftOrderEntries { get; set; }
-        public DbSet<DraftPickRequest> DraftPickRequestEntries { get; set; }
+        public DbSet<FantasyTeam> FantasyTeams { get; set; } = null;
+        public DbSet<FantasyLeague> FantasyLeagues { get; set; } = null;
+        public DbSet<Draft> Drafts { get; set; } = null;
+        public DbSet<DraftOrderEntry> DraftOrderEntries { get; set; } = null;
+        public DbSet<DraftPickRequest> DraftPickRequestEntries { get; set; } = null;
 
 
 
@@ -62,6 +62,51 @@ namespace TheTwelthFan.Data
                 entity.Property(fl => fl.name).IsRequired();
                 entity.Property(fl => fl.owneruserid).IsRequired();
             });
+            // Configure Draft entity
+            modelBuilder.Entity<Draft>(entity =>
+            {
+                entity.ToTable("draft");
+                entity.HasKey(d => d.Id);
+
+                entity.Property(d => d.FantasyLeagueId).IsRequired();
+                entity.Property(d => d.CurrentTeamPickingId).IsRequired();
+                entity.Property(d => d.PickNumber).IsRequired();
+                entity.Property(d => d.IsComplete).IsRequired();
+                entity.Property(d => d.StartedAt);
+                entity.Property(d => d.CompletedAt);
+
+                entity.HasMany(d => d.DraftOrder)
+                      .WithOne()
+                      .HasForeignKey(de => de.DraftId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure DraftOrderEntry entity
+            modelBuilder.Entity<DraftOrderEntry>(entity =>
+            {
+                entity.ToTable("draftorderentry");
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.DraftId).IsRequired();
+                entity.Property(e => e.PickNumber).IsRequired();
+                entity.Property(e => e.FantasyTeamId).IsRequired();
+            });
+
+            // Configure DraftPickRequest entity
+            modelBuilder.Entity<DraftPickRequest>(entity =>
+            {
+                entity.ToTable("draftpickrequest");
+
+                // No primary key configured here because it might not be persisted.
+                // If it's intended to be stored, add a primary key like:
+                entity.HasKey(dpr => new { dpr.LeagueId, dpr.TeamId, dpr.PlayerId });
+
+                entity.Property(dpr => dpr.LeagueId).IsRequired();
+                entity.Property(dpr => dpr.TeamId).IsRequired();
+                entity.Property(dpr => dpr.UserId).IsRequired();
+                entity.Property(dpr => dpr.PlayerId).IsRequired();
+            });
+
         }
     }
 }

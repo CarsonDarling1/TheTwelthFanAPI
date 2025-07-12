@@ -85,8 +85,13 @@ public class DraftController : ControllerBase
         if (draft == null || draft.IsComplete)
             return BadRequest("Draft not found or completed.");
 
+        var orderCount = draft.DraftOrder.Count;
+
+        // Loop back to index 0 after reaching end
+        var teamIndex = draft.PickNumber % orderCount;
         var currentOrder = draft.DraftOrder
-            .FirstOrDefault(d => d.PickNumber == draft.PickNumber);
+            .OrderBy(d => d.PickNumber)
+            .ElementAt(teamIndex);
 
         if (currentOrder == null || currentOrder.FantasyTeamId != request.TeamId)
             return BadRequest("It's not your turn.");
@@ -101,16 +106,21 @@ public class DraftController : ControllerBase
 
         player.fantasyteamid = request.TeamId;
         player.userId = request.UserId;
-        draft.PickNumber++;
 
-        if (draft.PickNumber > draft.DraftOrder.Count)
+        draft.PickNumber++; // move to next pick
+
+        // Optional: stop if all players are picked
+        int totalPlayers = await _context.Players.CountAsync(p => p.fantasyleagueid == request.LeagueId);
+        int draftedPlayers = await _context.Players.CountAsync(p => p.fantasyleagueid == request.LeagueId && p.fantasyteamid != 0);
+
+        if (draftedPlayers >= totalPlayers)
         {
             draft.IsComplete = true;
             draft.CompletedAt = DateTime.UtcNow;
         }
 
         await _context.SaveChangesAsync();
-
         return Ok();
     }
+
 }

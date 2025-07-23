@@ -69,7 +69,6 @@ namespace TheTwelthFan.Data
                 entity.HasKey(d => d.Id);
 
                 entity.Property(d => d.FantasyLeagueId).IsRequired();
-                entity.Property(d => d.CurrentTeamPickingId).IsRequired();
                 entity.Property(d => d.PickNumber).IsRequired();
                 entity.Property(d => d.IsComplete).IsRequired();
                 entity.Property(d => d.StartedAt);

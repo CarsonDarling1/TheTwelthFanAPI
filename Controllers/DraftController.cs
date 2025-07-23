@@ -32,15 +32,18 @@ public class DraftController : ControllerBase
         var draft = new Draft
         {
             FantasyLeagueId = leagueId,
+            PickNumber = 0,
             DraftOrder = new List<DraftOrderEntry>()
         };
 
-        int pickNumber = 1;
-        foreach (var team in teams)
+        int pickNum = 0;
+
+        // Assign pick numbers — shuffle if needed
+        foreach (var team in teams.OrderBy(t => t.id)) // or use Random for fairness
         {
             draft.DraftOrder.Add(new DraftOrderEntry
             {
-                PickNumber = pickNumber++,
+                PickNumber = pickNum++,
                 FantasyTeamId = team.id
             });
         }
@@ -61,16 +64,18 @@ public class DraftController : ControllerBase
         if (draft == null)
             return NotFound("Draft not found.");
 
-        var currentPick = draft.DraftOrder
-            .FirstOrDefault(d => d.PickNumber == draft.PickNumber);
-
-        if (currentPick == null)
+        if (draft.IsComplete)
             return Ok(new { IsComplete = true });
+
+        var ordered = draft.DraftOrder.OrderBy(d => d.PickNumber).ToList();
+        var index = draft.PickNumber % ordered.Count;
+        var currentEntry = ordered[index];
 
         return Ok(new
         {
-            TeamId = currentPick.FantasyTeamId,
-            PickNumber = draft.PickNumber
+            TeamId = currentEntry.FantasyTeamId,
+            PickNumber = draft.PickNumber,
+            IsComplete = false
         });
     }
 
@@ -78,24 +83,28 @@ public class DraftController : ControllerBase
     [HttpPost("pick")]
     public async Task<IActionResult> MakeDraftPick([FromBody] DraftPickRequest request)
     {
-        var draft = await _context.Drafts
-            .Include(d => d.DraftOrder)
-            .FirstOrDefaultAsync(d => d.FantasyLeagueId == request.LeagueId);
+Console.WriteLine($"DraftPickRequest received: " +
+    $"LeagueId={request.LeagueId}, " +
+    $"TeamId={request.TeamId}, " +
+    $"UserId={request.UserId}, " +
+    $"PlayerId={request.PlayerId}");        var draft = await _context.Drafts
+    .Include(d => d.DraftOrder)
+    .FirstOrDefaultAsync(d => d.FantasyLeagueId == request.LeagueId);
 
         if (draft == null || draft.IsComplete)
             return BadRequest("Draft not found or completed.");
 
-        var orderCount = draft.DraftOrder.Count;
+        var ordered = draft.DraftOrder.OrderBy(d => d.PickNumber).ToList();
 
-        // Loop back to index 0 after reaching end
-        var teamIndex = draft.PickNumber % orderCount;
-        var currentOrder = draft.DraftOrder
-            .OrderBy(d => d.PickNumber)
-            .ElementAt(teamIndex);
+        if (draft.PickNumber >= ordered.Count)
+            return BadRequest("All picks have been made.");
 
-        if (currentOrder == null || currentOrder.FantasyTeamId != request.TeamId)
+        var currentEntry = ordered[draft.PickNumber];
+
+        if (currentEntry.FantasyTeamId != request.TeamId)
             return BadRequest("It's not your turn.");
 
+        // Validate player
         var player = await _context.Players.FirstOrDefaultAsync(p =>
             p.id == request.PlayerId &&
             p.fantasyleagueid == request.LeagueId &&
@@ -104,12 +113,13 @@ public class DraftController : ControllerBase
         if (player == null)
             return BadRequest("Player already drafted or invalid.");
 
+        // Update player
         player.fantasyteamid = request.TeamId;
         player.userId = request.UserId;
 
-        draft.PickNumber++; // move to next pick
+        // Advance draft
+        draft.PickNumber++;
 
-        // Optional: stop if all players are picked
         int totalPlayers = await _context.Players.CountAsync(p => p.fantasyleagueid == request.LeagueId);
         int draftedPlayers = await _context.Players.CountAsync(p => p.fantasyleagueid == request.LeagueId && p.fantasyteamid != 0);
 
@@ -121,6 +131,40 @@ public class DraftController : ControllerBase
 
         await _context.SaveChangesAsync();
         return Ok();
+
     }
+
+    [Authorize]
+    [HttpGet("teams")]
+    public async Task<IActionResult> GetDraftTeams([FromQuery] int leagueId)
+    {
+        var draft = await _context.Drafts
+            .Include(d => d.DraftOrder)
+            .FirstOrDefaultAsync(d => d.FantasyLeagueId == leagueId);
+
+        if (draft == null)
+            return NotFound("Draft not found");
+
+        var teams = await _context.FantasyTeams
+            .Where(t => t.fantasyleagueid == leagueId)
+            .ToListAsync();
+
+        var results = draft.DraftOrder
+            .OrderBy(d => d.PickNumber)
+            .Select(order =>
+            {
+                var team = teams.FirstOrDefault(t => t.id == order.FantasyTeamId);
+                return new
+                {
+                    id = team.id,
+                    pickNumber = order.PickNumber,
+                    name = team.name,
+                    userid = team.userid
+                };
+            });
+
+        return Ok(results);
+    }
+
 
 }

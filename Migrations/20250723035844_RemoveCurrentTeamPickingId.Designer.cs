@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TheTwelthFan.Data;
@@ -11,9 +12,11 @@ using TheTwelthFan.Data;
 namespace TheTwelthFanAPI.Migrations
 {
     [DbContext(typeof(TodoContext))]
-    partial class TodoContextModelSnapshot : ModelSnapshot
+    [Migration("20250723035844_RemoveCurrentTeamPickingId")]
+    partial class RemoveCurrentTeamPickingId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -150,9 +153,6 @@ namespace TheTwelthFanAPI.Migrations
                     b.Property<int>("fantasyteamid")
                         .HasColumnType("integer");
 
-                    b.Property<int>("interceptions")
-                        .HasColumnType("integer");
-
                     b.Property<int>("jerseynumber")
                         .HasColumnType("integer");
 
@@ -160,30 +160,9 @@ namespace TheTwelthFanAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("passingTouchdowns")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("passingYards")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("pointLastSeason")
-                        .HasColumnType("integer");
-
                     b.Property<string>("position")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("receivingTouchdowns")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("receivingYards")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("rushingTouchdowns")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("rushingYards")
-                        .HasColumnType("integer");
 
                     b.Property<string>("team")
                         .IsRequired()
